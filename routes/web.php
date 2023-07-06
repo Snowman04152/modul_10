@@ -1,9 +1,9 @@
 <?php
-use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EmployeeController;
-
+use App\Http\Controllers\Auth\LoginController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,9 +16,15 @@ use App\Http\Controllers\EmployeeController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('/auth/login');
 });
-Route::get('home', [HomeController::class, 'index'])->name('home');
-Route::get('welcome', [HomeController::class, 'back'])->name('welcome');
-Route::get('profile', ProfileController::class)->name('profile');
-Route::resource('employees', EmployeeController::class);
+Auth::routes([
+    'register' => false
+]);
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::post('/login', [LoginController::class, 'authenticate']);
+Route::middleware(['auth'])->group(function () {
+    Route::get('home', [HomeController::class, 'index'])->name('home');
+    Route::get('profile', ProfileController::class)->name('profile');
+    Route::resource('employees', EmployeeController::class);
+});

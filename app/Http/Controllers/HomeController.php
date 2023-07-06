@@ -8,9 +8,4 @@ function index()
     $pageTitle = 'Home';
     return view('home', ['pageTitle' => $pageTitle]);
     }
-    function back()
-{
-    $pageTitle = 'welcome';
-    return view('welcome', ['pageTitle' => $pageTitle]);
-    }
 }
