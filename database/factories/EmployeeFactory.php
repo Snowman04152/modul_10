@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Position;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,9 +16,14 @@ class EmployeeFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {
-        return [
-            //
-        ];
-    }
+{
+    return [
+        'firstname' => fake()->firstName(),
+        'lastname' => fake()->lastName(),
+        'email' => fake()->email(),
+        'age' => fake()->numberBetween(25, 50),
+        'position_id' => Position::factory()
+    ];
+}
+
 }
