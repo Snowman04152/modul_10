@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EmployeesExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -11,6 +12,8 @@ use Nette\Utils\Validators;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Employee;
 use App\Models\Position;
+use RealRashid\SweetAlert\Facades\Alert;
+use PDF;
 
 
 
@@ -19,20 +22,32 @@ class EmployeeController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index()
     {
         $pageTitle = 'Employee List';
-        // ELOQUENT
-        $employees = Employee::all();
-        return view('employees.index', [
-            'pageTitle' => $pageTitle,
-            'employees' => $employees
-        ]);
-    }
 
+        confirmDelete();
+
+        return view('employees.index', compact('pageTitle'));
+    }
     /**
      * Show the form for creating a new resource.
      */
+
+    public function exportPdf()
+    {
+        $employees = Employee::all();
+
+        $pdf = PDF::loadView('employees.export_pdf', compact('employees'));
+
+        return $pdf->download('employees.pdf');
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(new EmployeesExport, 'employees.xlsx');
+    }
     public function create()
     {
         $pageTitle = 'Create Employee';
@@ -84,7 +99,7 @@ class EmployeeController extends Controller
         }
 
         $employee->save();
-
+        Alert::success('Added Successfully', 'Employee Data Added Successfully.');
         return redirect()->route('employees.index');
     }
 
@@ -171,10 +186,23 @@ class EmployeeController extends Controller
             $employee->encrypted_filename = $encryptedFilename;
         }
         $employee->save();
+        Alert::success('Added Successfully', 'Employee Data Added Successfully.');
         return redirect()->route('employees.index');
     }
 
+    public function getData(Request $request)
+    {
+        $employees = Employee::with('position');
 
+        if ($request->ajax()) {
+            return datatables()->of($employees)
+                ->addIndexColumn()
+                ->addColumn('actions', function ($employee) {
+                    return view('employees.actions', compact('employee'));
+                })
+                ->toJson();
+        }
+    }
     /**
      * Remove the specified resource from storage.
      */
@@ -182,6 +210,7 @@ class EmployeeController extends Controller
     {
         // ELOQUENT
         Employee::find($id)->delete();
+        Alert::success('Changed Successfully', 'Employee Data Changed Successfully.');
         return redirect()->route('employees.index');
     }
 }
